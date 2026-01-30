@@ -1,12 +1,65 @@
-1. 프로젝트 개요 (Project Overview)
-본 프로젝트는 생성형 AI를 활용하여 유저의 선택과 감정에 따라 실시간으로 변화하는 몰입형 독서 경험을 제공하는 서비스를 목표로 합니다. 단순 텍스트 나열을 넘어 시각(이미지 생성/전환), 청각(BGM), 상호작용(AI 대화)이 결합된 멀티미디어 환경을 구축합니다.
+# 📖 AI-Powered Interactive Storytelling Platform
 
-2. 핵심 기능 요구사항 (Functional Requirements)
-- 2.1 캐릭터 및 주요 장면 이미지 시스템커스텀 캐릭터 생성: 유저가 직접 이미지를 업로드하거나, 미리 정의된 화풍(Style Prompt)을 선택하여 주인공 캐릭터를 설정합니다.이미지 생성 최적화 (Scoring System): 모든 장면에 이미지를 생성하는 대신, 아래 수식에 기반하여 임계값($T$) 이상일 때만 생성을 트리거합니다.$$Score = (E \times w_1) + (I \times w_2)$$(E: 감정 고조도, I: 스토리 중요도, w: 가중치)일관성 유지 (RAG): 캐릭터의 외형 정보, 성장 배경, 성격 데이터를 Vector DB에 저장하고 이미지 생성 시 프롬프트에 주입하여 일관된 외형을 유지합니다.
-- 2.2 멀티미디어 연출 및 배경음악장면 기반 배경 전환: 스토리의 장소 변화나 분위기에 맞춰 실사보다는 서사적 몰입감을 주는 일러스트 스타일의 배경을 자동 전환합니다.감정 기반 BGM: 스토리의 현재 무드를 파악하여 저작권이 없는 AI 생성 음악 혹은 분류된 라이브러리에서 음악을 재생합니다.오디오 컨트롤: 유저가 상시 제어 가능한 Mute 토글 기능을 UI 내에 배치합니다.
-- 2.3 성능 및 오프라인 지원로컬 캐싱: 서버 비용 절감 및 속도 향상을 위해 한 번 생성된 텍스트와 이미지는 로컬 DB(SQLite 등)에 저장합니다.데이터 효율성: 반복되는 에셋은 서버 요청 없이 캐시된 데이터를 우선 호출하도록 로직을 설계합니다.
+> **"당신의 선택이 곧 이야기가 되고, AI가 그 장면을 그려냅니다."**
+> 
+> 본 프로젝트는 유저의 선택과 감정 변화에 따라 실시간으로 스토리, 이미지, BGM이 변화하는 **몰입형 AI 독서 서비스**입니다. Flutter와 FastAPI를 기반으로 최적화된 사용자 경험을 제공합니다.
 
-| 항목 | 상세 내용 | 비고 |
-|입력창 애니메이션|대화 시점에만 하단 고정창이 활성화되며, 스토리 진행 시에는 자연스럽게 숨김 처리|몰입도 향상|
-|플로팅 카드|상단에 캐릭터의 현재 감정 상태(HP/상태창 등)를 배치, 클릭 시 상세 프로필 확인|게임적 요소 결합|
-|타이핑 효과|텍스트가 한 번에 나오지 않고 실제 읽는 속도에 맞춰 출력|가독성 및 집중도|
+---
+
+## ✨ Key Features
+
+### 🎨 Intelligent Scene Imaging
+* **Custom Character Creation:** 유저가 직접 이미지를 업로드하거나, 특정 화풍(Style)을 선택하여 주인공의 외형을 정의할 수 있습니다.
+* **Smart Generation Scoring:** 모든 장면에 생성 비용(Token)을 낭비하지 않습니다. 스토리의 **감정 고조화**와 **서사적 중요도**를 점수화하여 임계값 이상인 주요 장면에서만 이미지를 생성합니다.
+* **Character Consistency (RAG):** 캐릭터의 성장 배경, 성격, 프로필을 Vector DB(RAG)로 관리하여 스토리 전반에 걸쳐 일관된 캐릭터 묘사를 유지합니다.
+
+### 🎵 Dynamic Multimedia Environment
+* **Contextual BGM:** 스토리의 분위기를 학습한 모델이 현재 장면에 맞는 저작권 프리 음악을 실시간으로 재생합니다.
+* **Automatic Background Transition:** 장소 변화나 분위기에 맞춰 실사가 아닌, 서사적 몰입감을 극대화하는 일러스트 스타일의 배경으로 자동 전환됩니다.
+
+### 📱 Advanced UI/UX for Readers
+* **Interactive Input:** 스토리 전개 시와 대화 시를 구분하여 하단 입력창이 유동적으로 변화하는 애니메이션 UI를 제공합니다.
+* **Emotion Floating Card:** 캐릭터의 현재 감정 상태를 상단 카드로 시각화하여 상호작용의 재미를 더합니다.
+* **Immersive Typography:** 타이핑 효과(Typewriter Effect)와 독서 전용 폰트를 통해 실제 소설을 읽는 듯한 몰입감을 부여합니다.
+* **Narrative Loading:** 단순한 스피너 대신 "이야기를 구성하는 중..."과 같은 서사적 로딩 UI를 도입했습니다.
+
+### ⚡ Performance & Optimization
+* **Offline First & Caching:** 서버 부하를 줄이기 위해 로컬 DB와 캐싱 로직을 활용, 이전에 읽은 장면은 데이터 소모 없이 즉시 로드됩니다.
+* **FastAPI Backend:** 비동기 처리를 통해 AI 모델의 응답 대기 시간을 최소화했습니다.
+
+---
+
+## 🛠 Tech Stack
+
+### Frontend
+<p>
+  <img src="https://img.shields.io/badge/Flutter-02569B?style=for-the-badge&logo=Flutter&logoColor=white"/>
+  <img src="https://img.shields.io/badge/Dart-0175C2?style=for-the-badge&logo=Dart&logoColor=white"/>
+</p>
+
+### Backend
+<p>
+  <img src="https://img.shields.io/badge/FastAPI-005571?style=for-the-badge&logo=fastapi&logoColor=white"/>
+  <img src="https://img.shields.io/badge/Python-3776AB?style=for-the-badge&logo=python&logoColor=white"/>
+  <img src="https://img.shields.io/badge/PostgreSQL-4169E1?style=for-the-badge&logo=postgresql&logoColor=white"/>
+</p>
+
+### AI & Design Assets
+* **LLM:** GPT-4o / Claude 3.5 Sonnet
+* **Image Gen:** Stable Diffusion / Midjourney API
+* **Icons:** Lucide Icons / Material Symbols
+* **Vector DB:** Pinecone / Chroma (for RAG)
+
+---
+
+## 🏗 System Architecture
+
+*사용자 입력 → FastAPI (비동기 처리) → LLM (스토리 생성 & 감정 분석) → Scoring Logic → Image/BGM Generation → Flutter UI 렌더링*
+
+---
+
+## 📋 Roadmap
+- [ ] 캐릭터 일관성 유지용 RAG 파이프라인 고도화
+- [ ] 스토리 장르별 특화 폰트 라이브러리 추가
+- [ ] 유저 간 스토리 공유 및 커뮤니티 기능 추가
+- [ ] 멀티 엔딩 시스템 도입

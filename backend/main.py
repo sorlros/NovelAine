@@ -1,7 +1,7 @@
-from fastapi import FastApi
+from fastapi import FastAPI
 from pydantic import BaseModel
 
-app = FastApi()
+app = FastAPI()
 
 class ChatRequest(BaseModel):
     massage: str

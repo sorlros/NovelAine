@@ -3,6 +3,7 @@ from groq import AsyncGroq
 import os
 from dotenv import load_dotenv
 from app.schemas.chat import ChatRequest
+from app.schemas.models import ApiResponse
 
 load_dotenv()
 
@@ -11,7 +12,7 @@ router = APIRouter()
 client = AsyncGroq(api_key=os.getenv("GROQ_API_KEY"))
 
 
-@router.post("/chat")
+@router.post("/chat", response_model=ApiResponse)
 async def chat(request: ChatRequest):
     try:
         response = await client.chat.completions.create(
@@ -28,9 +29,7 @@ async def chat(request: ChatRequest):
         )
 
         ai_response = response.choices[0].message.content
-        return {"response": ai_response}
+        return ApiResponse.ok(data={"response": ai_response})
 
     except Exception as e:
-        raise HTTPException(
-            status_code=500, detail=f"AI 응답 생성 중 오류 발생: {str(e)}"
-        )
+        return ApiResponse.fail(error=f"AI generation failed: {str(e)}")

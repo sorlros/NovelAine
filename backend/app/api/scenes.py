@@ -67,6 +67,23 @@ async def create_scene(story_id: UUID, scene: SceneCreate):
 
         created_scene = scene_response.data[0]
         scene_id = created_scene["id"]
+        
+        # 4. Trigger Image Generation (Async)
+        # Note: In production, use Celery/BackgroundTasks. 
+        # Here we just fire and forget or await (for simplicity awaiting, which might slow response)
+        if scores["should_generate_image"]:
+            # Warning: Creating service instance here. Dependency Injection is better.
+            from app.services.image_service import ImageService
+            image_service = ImageService()
+            
+            # Use BackgroundTasks in real app. For now, await it to ensure it works.
+            # prompt: use first 100 chars of content as prompt
+            prompt = scene.content[:200]
+            await image_service.generate_scene_image(prompt, scene_id)
+
+
+        created_scene = scene_response.data[0]
+        scene_id = created_scene["id"]
 
         # Insert choices if provided
         if scene.choices:

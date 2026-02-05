@@ -2,7 +2,7 @@
 -- Supabase PostgreSQL with pgvector extension for RAG
 
 -- Enable pgvector extension for RAG (character embeddings)
-extension pgvector;
+create extension if not exists vector;
 
 -- ============================================
 -- USERS (Supabase Auth integration)
@@ -104,7 +104,8 @@ create table characters (
     image_url text,
     
     -- Vector embedding for RAG (using pgvector)
-    embedding vector(1536),
+    -- Vector embedding for RAG (using pgvector)
+    embedding vector(384),
     
     created_at timestamptz default now(),
     updated_at timestamptz default now()
@@ -316,7 +317,7 @@ $$ language plpgsql;
 
 -- Search characters by similarity (RAG)
 create or replace function search_similar_characters(
-    query_embedding vector(1536),
+    query_embedding vector(384),
     match_threshold float,
     match_count int
 )

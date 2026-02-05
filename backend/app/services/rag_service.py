@@ -1,0 +1,61 @@
+import os
+from huggingface_hub import AsyncInferenceClient
+from app.services.supabase_client import get_supabase_client
+from typing import List
+
+class RagService:
+    def __init__(self):
+        # HuggingFace Inference API (Free Tier or Pro)
+        # using 'sentence-transformers/all-MiniLM-L6-v2' which is standard for RAG
+        self.api_key = os.getenv("HF_TOKEN")
+        self.client = AsyncInferenceClient(token=self.api_key)
+        self.supabase = get_supabase_client()
+        self.model_id = "sentence-transformers/all-MiniLM-L6-v2"
+
+    async def generate_embedding(self, text: str) -> List[float]:
+        """
+        Generate embeddings using HuggingFace Feature Extraction API.
+        """
+        try:
+            # feature_extraction returns a list of floats (embedding)
+            embedding = await self.client.feature_extraction(text, model=self.model_id)
+            # The API might return a list of lists or a single list depending on input
+            # We assume single input, so we expect a 1D array (list of floats)
+            # Ensure elements are native Python floats for JSON serialization
+            return [float(x) for x in embedding]
+        except Exception as e:
+            print(f"Embedding generation failed: {e}")
+            return []
+
+    async def search_relevant_context(self, query: str, threshold: float = 0.4, limit: int = 3) -> str:
+        """
+        Search for relevant context in Supabase.
+        """
+        embedding = await self.generate_embedding(query)
+        
+        if not embedding:
+            return ""
+
+        try:
+            # Call Supabase RPC
+            response = self.supabase.rpc(
+                "search_similar_characters",
+                {
+                    "query_embedding": embedding,
+                    "match_threshold": threshold,
+                    "match_count": limit
+                }
+            ).execute()
+            
+            if not response.data:
+                return ""
+
+            context_text = "\n[관련 캐릭터 기억]\n"
+            for item in response.data:
+                context_text += f"- {item['name']}: {item['description']}\n"
+            
+            return context_text
+            
+        except Exception as e:
+            print(f"RAG Search failed: {e}")
+            return ""

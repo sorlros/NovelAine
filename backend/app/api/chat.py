@@ -1,36 +1,21 @@
 from fastapi import APIRouter, HTTPException
-from groq import AsyncGroq
-import os
-from dotenv import load_dotenv
 from app.schemas.chat import ChatRequest
-
-load_dotenv()
+from app.services.chat_service import ChatService
 
 router = APIRouter()
-
-client = AsyncGroq(api_key=os.getenv("GROQ_API_KEY"))
-
+chat_service = ChatService()
 
 @router.post("/chat")
 async def chat(request: ChatRequest):
     try:
-        response = await client.chat.completions.create(
-            model="llama-3.3-70b-versatile",
-            messages=[
-                {
-                    "role": "system",
-                    "content": "당신은 몰입형 인터랙티브 스토리텔링 플랫폼의 AI 스토리텔러입니다. 사용자의 선택에 따라 흥미롭고 감정적인 이야기를 전개하세요.",
-                },
-                {"role": "user", "content": request.message},
-            ],
-            temperature=0.8,
-            max_tokens=1000,
-        )
-
-        ai_response = response.choices[0].message.content
+        # Request에 history 필드가 있다면 받아서 넘겨줄 수 있음 (현재 스키마엔 없음)
+        ai_response = await chat_service.generate_response(request.message)
         return {"response": ai_response}
 
     except Exception as e:
+        print(f"Error: {e}")
         raise HTTPException(
             status_code=500, detail=f"AI 응답 생성 중 오류 발생: {str(e)}"
         )
+    
+
